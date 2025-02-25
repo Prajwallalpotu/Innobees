@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Recommender</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .input-section, .results-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .resume-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .resume-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .resume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .add-resume-btn {
+            background: #2ecc71;
+            margin-bottom: 15px;
+        }
+
+        .add-resume-btn:hover {
+            background: #27ae60;
+        }
+
+        .project-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-title {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .skill-tag {
+            background: #e1f0fa;
+            color: #3498db;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .team-assignments {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .team-member {
+            margin-bottom: 8px;
+        }
+
+        .member-name {
+            font-weight: 600;
+        }
+
+        .domain-tag {
+            display: inline-block;
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .domain-Frontend { background: #ffcccb; }
+        .domain-Backend { background: #c2e0ff; }
+        .domain-Database { background: #d1e7dd; }
+        .domain-DevOps { background: #fff3cd; }
+        .domain-Mobile { background: #e6c9ff; }
+        .domain-AI\/ML { background: #b3e6b3; }
+        .domain-Blockchain { background: #ffd8b2; }
+        .domain-Security { background: #d0d0ff; }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Recommender System</h1>
+    <p>Upload resumes to get personalized project recommendations based on skills and experience.</p>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Input</h2>
+            
+            <div class="form-group">
+                <label for="mode-select">Mode:</label>
+                <select id="mode-select">
+                    <option value="individual">Individual</option>
+                    <option value="team">Team</option>
+                </select>
+            </div>
+            
+            <div class="resume-inputs" id="resume-inputs">
+                <div class="resume-container">
+                    <div class="resume-header">
+                        <label>Resume 1:</label>
+                    </div>
+                    <textarea class="resume-textarea" placeholder="Paste resume text here..."></textarea>
+                </div>
+            </div>
+            
+            <button id="add-resume-btn" class="add-resume-btn">Add Team Member</button>
+            
+            <button id="recommend-btn">Get Recommendations</button>
+        </div>
+        
+        <div class="results-section">
+            <h2>Recommended Projects</h2>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing resumes and finding matches...</p>
+            </div>
+            
+            <div id="results-container">
+                <p>Your recommended projects will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modeSelect = document.getElementById('mode-select');
+            const resumeInputs = document.getElementById('resume-inputs');
+            const addResumeBtn = document.getElementById('add-resume-btn');
+            const recommendBtn = document.getElementById('recommend-btn');
+            const resultsContainer = document.getElementById('results-container');
+            const loadingElement = document.getElementById('loading');
+            
+            let resumeCount = 1;
+            
+            // Toggle Add Team Member button visibility based on mode
+            modeSelect.addEventListener('change', function() {
+                if (modeSelect.value === 'individual') {
+                    addResumeBtn.style.display = 'none';
+                    // Keep only one resume input
+                    while (resumeInputs.children.length > 1) {
+                        resumeInputs.removeChild(resumeInputs.lastChild);
+                    }
+                    resumeCount = 1;
+                } else {
+                    addResumeBtn.style.display = 'block';
+                }
+            });
+            
+            // Initialize mode
+            if (modeSelect.value === 'individual') {
+                addResumeBtn.style.display = 'none';
+            }
+            
+            // Add resume input
+            addResumeBtn.addEventListener('click', function() {
+                resumeCount++;
+                const resumeContainer = document.createElement('div');
+                resumeContainer.className = 'resume-container';
+                
+                const resumeHeader = document.createElement('div');
+                resumeHeader.className = 'resume-header';
+                
+                const label = document.createElement('label');
+                label.textContent = `Resume ${resumeCount}:`;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', function() {
+                    resumeInputs.removeChild(resumeContainer);
+                    updateResumeLabels();
+                });
+                
+                resumeHeader.appendChild(label);
+                resumeHeader.appendChild(removeBtn);
+                
+                const textarea = document.createElement('textarea');
+                textarea.className = 'resume-textarea';
+                textarea.placeholder = 'Paste resume text here...';
+                
+                resumeContainer.appendChild(resumeHeader);
+                resumeContainer.appendChild(textarea);
+                
+                resumeInputs.appendChild(resumeContainer);
+            });
+            
+            // Update resume labels
+            function updateResumeLabels() {
+                const resumeContainers = resumeInputs.querySelectorAll('.resume-container');
+                resumeCount = 0;
+                resumeContainers.forEach(container => {
+                    resumeCount++;
+                    const label = container.querySelector('label');
+                    label.textContent = `Resume ${resumeCount}:`;
+                });
+            }
+            
+            // Sample data for projects (this would normally come from backend)
+            const domains = [
+                'Frontend', 'Backend', 'Database', 'DevOps', 
+                'Mobile', 'AI/ML', 'Blockchain', 'Security'
+            ];
+            
+            const projects = [
+                {
+                    name: 'E-commerce Platform',
+                    description: 'Build a full-stack e-commerce platform with product listings, user authentication, shopping cart, and payment integration.',
+                    problem_solved: 'Helps small businesses establish an online presence and sell products directly to customers.',
+                    required_skills: {
+                        'Frontend': '40%',
+                        'Backend': '30%',
+                        'Database': '30%'
+                    }
+                },
+                {
+                    name: 'Healthcare Appointment System',
+                    description: 'Create a system for patients to book appointments with healthcare providers, including reminders and medical history tracking.',
+                    problem_solved: 'Streamlines the healthcare appointment process, reducing wait times and improving patient experience.',
+                    required_skills: {
+                        'Frontend': '30%',
+                        'Backend': '40%',
+                        'Database': '30%'
+                    }
+                },
+                {
+                    name: 'Predictive Maintenance System',
+                    description: 'Develop a system that predicts when industrial equipment will need maintenance using sensor data and machine learning.',
+                    problem_solved: 'Reduces unexpected downtime in manufacturing and saves costs on emergency repairs.',
+                    required_skills: {
+                        'AI/ML': '60%',
+                        'Backend': '20%',
+                        'Frontend': '20%'
+                    }
+                },
+                {
+                    name: 'Smart Home Automation System',
+                    description: 'Develop a system to control and automate home devices like lights, thermostats, and security systems.',
+                    problem_solved: 'Increases home energy efficiency and improves convenience and security for homeowners.',
+                    required_skills: {
+                        'Backend': '30%',
+                        'Frontend': '30%',
+                        'Mobile': '40%'
+                    }
+                }
+            ];
+            
+            // Recommend button click handler
+            recommendBtn.addEventListener('click', function() {
+                const mode = modeSelect.value;
+                const textareas = document.querySelectorAll('.resume-textarea');
+                const resumes = Array.from(textareas).map(textarea => textarea.value);
+                
+                if (resumes[0].trim() === '') {
+                    alert('Please enter at least one resume.');
+                    return;
+                }
+                
+                // Show loading state
+                loadingElement.style.display = 'block';
+                resultsContainer.innerHTML = '';
+                
+                // Simulate processing time
+                setTimeout(() => {
+                    loadingElement.style.display = 'none';
+                    
+                    // Analyze resumes and make recommendations
+                    let recommendations;
+                    
+                    if (mode === 'individual') {
+                        // Process single resume
+                        recommendations = getIndividualRecommendations(resumes[0]);
+                    } else {
+                        // Process team resumes
+                        recommendations = getTeamRecommendations(resumes);
+                    }
+                    
+                    displayRecommendations(recommendations, mode);
+                }, 1500);
+            });
+            
+            // Simulate individual recommendations
+            function getIndividualRecommendations(resume) {
+                // Simplified logic: just return sample projects
+                // In real implementation, we would analyze the resume
+                return projects.slice(0, 3);
+            }
+            
+            // Simulate team recommendations
+            function getTeamRecommendations(resumes) {
+                // Get sample projects and add team assignments
+                return projects.slice(0, 3).map(project => {
+                    // Add random team assignments for demo
+                    const teamProject = {...project};
+                    teamProject.team_assignments = [];
+                    
+                    for (let i = 0; i < resumes.length; i++) {
+                        const resumeText = resumes[i].toLowerCase();
+                        const memberAssignment = {
+                            member: `Team Member ${i+1}`,
+                            responsibilities: []
+                        };
+                        
+                        // Assign domains based on keywords in resume
+                        // This is simplified - actual implementation would use NLP
+                        for (const domain of domains) {
+                            if (domain === 'Frontend' && resumeText.includes('html') ||
+                                domain === 'Backend' && resumeText.includes('python') ||
+                                domain === 'AI/ML' && resumeText.includes('machine learning') ||
+                                domain === 'Mobile' && resumeText.includes('android')) {
+                                memberAssignment.responsibilities.push(domain);
+                            }
+                        }
+                        
+                        // If no matches found, assign a random domain
+                        if (memberAssignment.responsibilities.length === 0) {
+                            const randomDomain = Object.keys(project.required_skills)[
+                                Math.floor(Math.random() * Object.keys(project.required_skills).length)
+                            ];
+                            memberAssignment.responsibilities.push(randomDomain);
+                        }
+                        
+                        teamProject.team_assignments.push(memberAssignment);
+                    }
+                    
+                    return teamProject;
+                });
+            }
+            
+            // Display recommendations
+            function displayRecommendations(recommendations, mode) {
+                resultsContainer.innerHTML = '';
+                
+                if (recommendations.length === 0) {
+                    resultsContainer.innerHTML = '<p>No matching projects found.</p>';
+                    return;
+                }
+                
+                recommendations.forEach(project => {
+                    const projectCard = document.createElement('div');
+                    projectCard.className = 'project-card';
+                    
+                    const title = document.createElement('h3');
+                    title.className = 'project-title';
+                    title.textContent = project.name;
+                    
+                    const description = document.createElement('p');
+                    description.textContent = project.description;
+                    
+                    const problemSolved = document.createElement('p');
+                    problemSolved.innerHTML = '<strong>Problem Solved:</strong> ' + project.problem_solved;
+                    
+                    const skillsTitle = document.createElement('p');
+                    skillsTitle.innerHTML = '<strong>Required Skills:</strong>';
+                    
+                    const skillsContainer = document.createElement('div');
+                    skillsContainer.className = 'skills-container';
+                    
+                    for (const [skill, percentage] of Object.entries(project.required_skills)) {
+                        const skillTag = document.createElement('span');
+                        skillTag.className = 'skill-tag';
+                        skillTag.textContent = `${skill}: ${percentage}`;
+                        skillsContainer.appendChild(skillTag);
+                    }
+                    
+                    projectCard.appendChild(title);
+                    projectCard.appendChild(description);
+                    projectCard.appendChild(problemSolved);
+                    projectCard.appendChild(skillsTitle);
+                    projectCard.appendChild(skillsContainer);
+                    
+                    // Add team assignments if available
+                    if (mode === 'team' && project.team_assignments) {
+                        const teamTitle = document.createElement('div');
+                        teamTitle.innerHTML = '<strong>Team Assignments:</strong>';
+                        
+                        const teamAssignments = document.createElement('div');
+                        teamAssignments.className = 'team-assignments';
+                        
+                        project.team_assignments.forEach(assignment => {
+                            const teamMember = document.createElement('div');
+                            teamMember.className = 'team-member';
+                            
+                            const memberName = document.createElement('span');
+                            memberName.className = 'member-name';
+                            memberName.textContent = assignment.member + ': ';
+                            
+                            teamMember.appendChild(memberName);
+                            
+                            assignment.responsibilities.forEach(domain => {
+                                const domainTag = document.createElement('span');
+                                domainTag.className = `domain-tag domain-${domain}`;
+                                domainTag.textContent = domain;
+                                teamMember.appendChild(domainTag);
+                            });
+                            
+                            teamAssignments.appendChild(teamMember);
+                        });
+                        
+                        projectCard.appendChild(teamTitle);
+                        projectCard.appendChild(teamAssignments);
+                    }
+                    
+                    resultsContainer.appendChild(projectCard);
+                });
+            }
+            
+            // Add example buttons for quick testing
+            const addExampleBtn = document.createElement('button');
+            addExampleBtn.textContent = 'Load Example Resume';
+            addExampleBtn.style.marginTop = '10px';
+            addExampleBtn.addEventListener('click', function() {
+                const textarea = document.querySelector('.resume-textarea');
+                textarea.value = `John Doe
+Frontend Developer
+
+Skills:
+- Expert in HTML, CSS, JavaScript
+- React, Angular, Vue.js
+- Responsive design and UI/UX principles
+- Experience with RESTful APIs
+
+Experience:
+Frontend Developer at Tech Company (2020-2023)
+- Developed and maintained frontend applications using React
+- Implemented responsive designs for mobile and desktop
+- Collaborated with backend developers to integrate APIs`;
+            });
+            
+            resumeInputs.appendChild(addExampleBtn);
+        });
+    </script>
+</body>
+</html>
