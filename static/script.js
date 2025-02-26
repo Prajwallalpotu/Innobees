@@ -1,3 +1,3 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Project Recommender Ready!");
+  console.log("Project Recommendation System Ready!");
 });

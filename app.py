@@ -39,6 +39,23 @@ def recommend_projects(skills):
     # Split into multiple project ideas
     return generated_text.split("\n")
 
+def assign_roles(skills):
+    """Assign roles to team members based on individual strengths."""
+    roles = {
+        "Frontend": "UI/UX, React, HTML, CSS, JavaScript",
+        "Backend": "Flask, Node.js, Databases",
+        "AI/ML": "TensorFlow, Scikit-learn, Deep Learning",
+    }
+
+    assigned_roles = {}
+    for role, skills_required in roles.items():
+        for skill in skills:
+            if skill.lower() in skills_required.lower():
+                assigned_roles[role] = skills_required
+                break
+
+    return assigned_roles
+
 @app.route("/", methods=["GET", "POST"])
 def upload_resume():
     if request.method == "POST":
@@ -56,8 +73,9 @@ def upload_resume():
         
         skills = extract_skills(text)
         projects = recommend_projects(skills)
+        roles = assign_roles(skills)
 
-        return render_template("results.html", skills=skills, projects=projects)
+        return render_template("results.html", skills=skills, projects=projects, roles=roles)
 
     return render_template("index.html")
 
